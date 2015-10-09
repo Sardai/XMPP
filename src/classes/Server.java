@@ -91,15 +91,15 @@ public class Server {
 						stream = JAXB.unmarshal(new StringReader(line),Stream.class);
 						System.out.println(stream.to);
 						
-//						Stream out = new Stream();
-//						out.from = stream.to;
+						Stream out = new Stream();
+						out.from = stream.to;
 						int id = 1;
 						StringWriter writer = new StringWriter();									
-						//JAXB.marshal(out, writer);
-						//writer.toString().replace("/", "")
+						JAXB.marshal(out, writer);
+						 
 						printWriter.write("<?xml version='1.0'?>");
-						String xml = String.format("<stream:stream from='%s' id='%d' xmlns='jabber:client' xmlns:stream='http://etherx.jabber.org/streams' version='1.0'>",stream.to,id );
-						printWriter.write(xml);
+						printWriter.write(writer.toString().replace("/", ""));
+					
 						
 					     printWriter.write("<stream:features>");
 					     printWriter.write("</stream:features>");
@@ -118,7 +118,7 @@ public class Server {
 //						}
 
 					}
-					 System.out.println("out");
+				 
 
 				}
 			} catch (IOException e) {
