@@ -70,6 +70,8 @@ public class Server {
 	private class ClientThread extends Thread {
 		private Socket socket;
 		private String nickname;
+		private String to;
+		PrintWriter printWriter;
 
 		public ClientThread(Socket socket) {
 			this.socket = socket;
@@ -85,20 +87,21 @@ public class Server {
 			try {
 				inputStream = socket.getInputStream();
 				outputStream = socket.getOutputStream();
-				PrintWriter printWriter = new PrintWriter(outputStream);
 				BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+				boolean read = false;
 				boolean streamSend = false;
 				boolean requestSend = false;
 				boolean authenticationSend = false;
 				boolean rosterSend = false;
-				String incoming = "";
+				String incoming = "";		
+				printWriter = new PrintWriter(outputStream);
 				while (!socket.isClosed()) {
 
 					String line = "";
 					Stream stream = null;
 					line = reader.readLine();
 					while ((line = reader.readLine()) != null) {
-						System.out.println("incoming: " + line);
+						//System.out.println("incoming: " + line);
 						try {
 							if (!streamSend) {
 								line += "</stream:stream>";
@@ -122,10 +125,13 @@ public class Server {
 
 								incoming += line;
 								if (line.equals("</iq>")) {
-
+									System.out.println(incoming);
 									DocumentBuilder builder = dbf.newDocumentBuilder();
 									dom = builder.parse(new InputSource(new StringReader(incoming)));
 									String id = dom.getDocumentElement().getAttribute("id");
+									this.to = dom.getDocumentElement().getAttribute("to");
+									this.nickname = dom.getDocumentElement().getFirstChild().getFirstChild().getFirstChild().getNodeValue();
+									System.out.println(nickname+"@"+to);
 									printWriter.write("<iq type='result' id='" + id + "'>");
 									printWriter.write(
 											"<query xmlns='jabber:iq:auth'> <username/> <password/> <digest/> <resource/> </query>");
@@ -151,8 +157,8 @@ public class Server {
 							} else if(!rosterSend){
 								incoming += line;
 								if (line.equals("</iq>")) {
+									//remove end tag at beginning of the line.
 									incoming = incoming.substring(5);
-									System.out.println(incoming);
 									DocumentBuilder builder = dbf.newDocumentBuilder();
 									dom = builder.parse(new InputSource(new StringReader(incoming)));
 									String id = dom.getDocumentElement().getAttribute("id");
@@ -164,9 +170,35 @@ public class Server {
 									rosterSend = true;
 									System.out.println("</roster>");
 								}
+							}else{	
+								System.out.println(line);
+								if(line.startsWith("<message")){
+									read = true;
+								}
+								
+								if(read){
+									incoming += line;
+									if(line.equals("</message>")){
+										read = false;
+										System.out.println(incoming);
+										DocumentBuilder builder = dbf.newDocumentBuilder();
+										dom = builder.parse(new InputSource(new StringReader(incoming)));
+										String to = dom.getDocumentElement().getAttribute("to");
+										String id = dom.getDocumentElement().getAttribute("id");
+										
+										for(ClientThread thread : clientThreadList){
+											if((thread.nickname+"@"+thread.to).equals(to)){
+												thread.printWriter.write(incoming);
+												System.out.println("send message");
+											}
+										}
+										
+									}
+								}
+								
 							}
 						} catch (Exception e) {
-							System.out.println(e);
+							System.out.println("error: "+ line);
 						}
 
 					}
