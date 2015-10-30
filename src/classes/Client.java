@@ -44,12 +44,12 @@ public class Client {
 	public String getRosterXML(String to, String id){
 		
 		String iq = "<iq to=\"" + to + "\" type=\"result\" id=\"" + id + "\">\n";
-		String query = "	<query xmlns=\"jabber:iq:roster\">\n";
-		String items = "";
+		String query = "<query xmlns=\"jabber:iq:roster\">\n";
+		String items = "<item jid=\"test@server.com\" name=\"test\" subscription=\"both\">	\n</item>\n";
 		for(Client c : roster){
-			items += "		<item jid=\"" + c.getTo() + "\" name=\"" + c.getName() + "\" subscription=\"both\">	\n		</item>\n";
+			items += "<item jid=\"" + c.getTo() + "\" name=\"" + c.getName() + "\" subscription=\"both\">	\n</item>\n";
 		}
-		String close = "	</query>\n</iq>";
+		String close = "</query>\n</iq>";
 		
 		return iq + query + items + close;
 		
