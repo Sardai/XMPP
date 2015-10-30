@@ -174,7 +174,8 @@ public class Server {
 									rosterSend = true;
 									System.out.println("</roster>");
 								}
-							}
+							} 
+							
 						} catch (Exception e) {
 							System.out.println(e);
 						}
