@@ -46,6 +46,11 @@ import org.xml.sax.SAXException;
  */
 public class Server {
 	private List<ClientThread> clientThreadList;
+	
+	Client client1 = new Client("jay.com", "viri");
+	Client client2 = new Client("chris@rötter.com", "Chris");
+	Client client3 = new Client("harm@frielink.com", "Harm");
+	Client client4 = new Client("rogier@hommels.com", "Rogier");
 
 	public void start() {
 		clientThreadList = new ArrayList<>();
@@ -65,6 +70,10 @@ public class Server {
 		} catch (IOException e) {
 			System.out.println(e.getMessage());
 		}
+				
+		client1.addFriend(client2);
+		client1.addFriend(client3);
+		client1.addFriend(client4);
 	}
 
 	private class ClientThread extends Thread {
@@ -156,9 +165,10 @@ public class Server {
 									DocumentBuilder builder = dbf.newDocumentBuilder();
 									dom = builder.parse(new InputSource(new StringReader(incoming)));
 									String id = dom.getDocumentElement().getAttribute("id");
+									
+									System.out.println("\n ---------- \n" + client1.getRosterXML(client1.getTo(), id) + "\n ----------\n");
 
-									printWriter.write(
-											"<iq id='"+id+"'  type='result'> <query xmlns='jabber:iq:roster' ver='ver7'> </query> </iq>");
+									printWriter.write(client1.getRosterXML(client1.getTo(), id));
 									printWriter.flush();
 									incoming = "";
 									rosterSend = true;
